@@ -131,3 +131,5 @@ dmypy.json
 
 # added by sherk
 data/*
+*.mp4
+*.gif
