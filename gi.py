@@ -94,17 +94,17 @@ if __name__ == '__main__':
     kpt_repj = np.zeros((8, 2))
     for _lidx in it.combinations(range(6), 4):
       for _sidx in it.combinations(range(6), 4):
-        kpt_l = assign_raw(kpt_tbd[:6, :][_lidx, :], LBWL[:4, :2])
-        kpt_s = assign_raw(kpt_tbd[6:, :][_sidx, :], LBWL[4:, :2])
+        kpt_l = assign_raw(kpt_tbd[:6][_lidx, :], LBWL[:4, :2])
+        kpt_s = assign_raw(kpt_tbd[6:][_sidx, :], LBWL[4:, :2])
         kpt_slct = np.vstack((kpt_l, kpt_s))
 
-        p_cam2lbwl = reg_cam(kpt_slct, LBWL, 0, T_plane2cam)[-6:]
+        p_cam2lbwl = reg_cam(kpt_slct, LBWL, 0, T_plane2cam)
         kpt_cnt = T_plane2cam @ (m3d.Transform(p_cam2lbwl) * LBWL.T)
         kpt_cnt = (kpt_cnt[:2, :] / kpt_cnt[-1:, :]).T
         # err_cnt = np.linalg.norm(kpt_cnt - kpt_slct)
         err_cnt = np.abs(kpt_cnt - kpt_slct).max()
         cnt += 1
-        if err_cnt < err_repj or (cnt % 1000 == 0):
+        if err_cnt < err_repj:
           err_repj = err_cnt
           kpt_repj = kpt_slct
           print(cnt, 'with err:', err_repj)
