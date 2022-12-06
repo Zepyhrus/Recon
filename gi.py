@@ -74,37 +74,21 @@ T_plane2cam = np.array([
 
 
 if __name__ == '__main__':
-  # P_CAM2BASE = [-0.0192333   0.04923981  0.98147314 -0.14786065 -0.8476393   1.88147681]
-
   with open('test\\test_kpts2.json', 'r') as f:
     kps = json.load(f)
-
-  # # # 交换汶静标记点的x、y轴
-  #   for kp in kps:
-  #     for _k in ['keypoints', 'keypoints_12']:
-  #       pts = np.array(kp[_k]).reshape((-1, 2))[:, ::-1]
-  #       if _k == 'keypoints':
-  #         kp[_k] = pts[4:].flatten().tolist() + pts[:4].flatten().tolist()
-  #       else:
-  #         kp[_k] = pts[6:].flatten().tolist() + pts[:6].flatten().tolist()
-  
-  # with open('test\\test_kpts2.json', 'w') as f:
-  #   json.dump(kps, f)
-  # print(kps)
 
   for kp in kps:
     image = f'test\\{kp["image_id"]}.bmp'
     img = cv2.imread(image)
-    
 
-    kpt_true = np.array(kp['keypoints']).reshape((-1, 2))
-    kpt_true[:4, ...] = assign_raw(kpt_true[:4, ...], LBWL[:4, :2])
-    kpt_true[4:, ...] = assign_raw(kpt_true[4:, ...], LBWL[4:, :2])
+    # kpt_true = np.array(kp['keypoints']).reshape((-1, 2))
+    # kpt_true[:4, ...] = assign_raw(kpt_true[:4, ...], LBWL[:4, :2])
+    # kpt_true[4:, ...] = assign_raw(kpt_true[4:, ...], LBWL[4:, :2])
 
     kpt_tbd = np.array(kp['keypoints_12']).reshape((-1, 2))
     cnt = 0
     err_repj = np.inf
-    kpt_repj = np.zeros_like(kpt_true)
+    kpt_repj = np.zeros((8, 2))
     for _lidx in it.combinations(range(6), 4):
       for _sidx in it.combinations(range(6), 4):
         kpt_l = assign_raw(kpt_tbd[:6, :][_lidx, :], LBWL[:4, :2])
@@ -114,15 +98,16 @@ if __name__ == '__main__':
         p_cam2lbwl = reg_cam(kpt_slct, LBWL, 0, T_plane2cam)[-6:]
         kpt_cnt = T_plane2cam @ (m3d.Transform(p_cam2lbwl) * LBWL.T)
         kpt_cnt = (kpt_cnt[:2, :] / kpt_cnt[-1:, :]).T
-        err_cnt = np.linalg.norm(kpt_cnt - kpt_slct)
+        # err_cnt = np.linalg.norm(kpt_cnt - kpt_slct)
+        err_cnt = np.abs(kpt_cnt - kpt_slct).max()
         cnt += 1
         if err_cnt < err_repj or (cnt % 1000 == 0):
           err_repj = err_cnt
           kpt_repj = kpt_slct
           print(cnt, 'with err:', err_repj)
 
-    circle(img, kpt_true[:4], raidus=12)
-    circle(img, kpt_true[4:])
+    # circle(img, kpt_true[:4], raidus=12)
+    # circle(img, kpt_true[4:])
     circle(img, kpt_tbd[:6], (0, 0, 255), 24, lw=4)
     circle(img, kpt_tbd[6:], (0, 0, 255), 12, lw=4)
     circle(img, kpt_repj[:4], (0, 255, 255), 24)
