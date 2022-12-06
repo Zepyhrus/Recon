@@ -7,6 +7,7 @@ import json
 import numpy as np
 import itertools as it
 import math3d as m3d
+from time import time
 
 from toolbox import LBWL, reg_cam, circle, assign_raw
 
@@ -77,6 +78,8 @@ if __name__ == '__main__':
   with open('test\\test_kpts2.json', 'r') as f:
     kps = json.load(f)
 
+  st = time()
+
   for kp in kps:
     image = f'test\\{kp["image_id"]}.bmp'
     img = cv2.imread(image)
@@ -119,6 +122,7 @@ if __name__ == '__main__':
     # cv2.imshow('_', cv2.resize(img, (512, 512)))
     # if cv2.waitKey(100) == 27:
     #   break
+  print(time() - st)
 
 
 
