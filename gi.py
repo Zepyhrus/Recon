@@ -1,5 +1,3 @@
-from glob import glob
-
 from moviepy.editor import VideoFileClip, concatenate_videoclips, vfx
 
 import cv2
@@ -72,21 +70,24 @@ T_plane2cam = np.array([
   [      0,        0,        1],
 ])
 
-
+p_ori2lbwl = [0.00061, -0.00522, 0.186717, -1.58435, -0.00879, 0.00658]
 
 if __name__ == '__main__':
   with open('test\\test_kpts2.json', 'r') as f:
     kps = json.load(f)
+  
+  ps_base2ori = np.loadtxt('test\\poses.txt')
 
   st = time()
 
   for kp in kps:
+    # if kp["image_id"] != 807: continue
     image = f'test\\{kp["image_id"]}.bmp'
     img = cv2.imread(image)
 
-    # kpt_true = np.array(kp['keypoints']).reshape((-1, 2))
-    # kpt_true[:4, ...] = assign_raw(kpt_true[:4, ...], LBWL[:4, :2])
-    # kpt_true[4:, ...] = assign_raw(kpt_true[4:, ...], LBWL[4:, :2])
+    kpt_true = np.array(kp['keypoints']).reshape((-1, 2))
+    kpt_true[:4, ...] = assign_raw(kpt_true[:4, ...], LBWL[:4, :2])
+    kpt_true[4:, ...] = assign_raw(kpt_true[4:, ...], LBWL[4:, :2])
 
     kpt_tbd = np.array(kp['keypoints_12']).reshape((-1, 2))
     cnt = 0
@@ -104,13 +105,13 @@ if __name__ == '__main__':
         # err_cnt = np.linalg.norm(kpt_cnt - kpt_slct)
         err_cnt = np.abs(kpt_cnt - kpt_slct).max()
         cnt += 1
-        if err_cnt < err_repj:
+        if err_cnt < 10 < err_repj:
           err_repj = err_cnt
-          kpt_repj = kpt_slct
-          print(cnt, 'with err:', err_repj)
+          kpt_repj = kpt_cnt # kpt_slct
+          print(cnt, ':', err_repj, ':', p_cam2lbwl)
 
-    # circle(img, kpt_true[:4], raidus=12)
-    # circle(img, kpt_true[4:])
+    circle(img, kpt_true[:4], raidus=12)
+    circle(img, kpt_true[4:])
     circle(img, kpt_tbd[:6], (0, 0, 255), 24, lw=4)
     circle(img, kpt_tbd[6:], (0, 0, 255), 12, lw=4)
     circle(img, kpt_repj[:4], (0, 255, 255), 24)
