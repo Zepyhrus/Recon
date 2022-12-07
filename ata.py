@@ -21,7 +21,7 @@ if __name__ == '__main__':
   with open('test\\test_kpts2.json', 'r') as f:
     kps = json.load(f)
   
-  ps = np.loadtxt('test\\poses.txt')
+  ps = np.loadtxt('test\\ps_base2ori.txt')
   ps_base2ori = dict()
   for i in range(10):
     ps_base2ori[800+i] = ps[i]
@@ -53,7 +53,7 @@ if __name__ == '__main__':
         # err_cnt = np.linalg.norm(kpt_cnt - kpt_slct)
         err_cnt = np.abs(kpt_cnt - kpt_slct).max()
         cnt += 1
-        if err_cnt < 10 < err_repj:
+        if err_cnt < err_repj:
           err_repj = err_cnt
           kpt_repj = kpt_cnt # kpt_slct
 
@@ -61,6 +61,7 @@ if __name__ == '__main__':
           T_base2cam = Ts(p_base2ori) * Ts(p_ori2lbwl) * Ts(p_cam2lbwl).inverse
 
           print(cnt, ':', err_repj, 'base2cam:', T_base2cam.pose_vector)
+          print('cam2lbwl:', np.array(p_cam2lbwl))
 
     # circle(img, kpt_true[:4], raidus=12)
     # circle(img, kpt_true[4:])
